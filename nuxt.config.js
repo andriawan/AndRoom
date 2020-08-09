@@ -59,6 +59,7 @@ server: {
   modules: [
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
+    '@nuxtjs/auth',
     [
       '@nuxtjs/firebase',
       {
