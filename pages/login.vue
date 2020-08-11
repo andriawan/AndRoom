@@ -54,6 +54,7 @@ export default {
       }
     }
   },
+  middleware: 'authenticated',
   methods: {
     doLogin : function(){
     }
