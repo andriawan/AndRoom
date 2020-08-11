@@ -45,20 +45,32 @@
 
 <script>
 export default {
-  data(){
+  data() {
     return {
-      'title' : 'Login',
-      'user' : {
-          'password' : null,
-          'email' : null,
-      }
+      title: 'Login',
+      user: {
+        password: null,
+        email: null,
+      },
     }
   },
   middleware: 'authenticated',
   methods: {
-    doLogin : function(){
-    }
-  }
+    doLogin: function () {
+      this.$fireAuth
+        .signInWithEmailAndPassword(this.user.email, this.user.password)
+        .then((data) => {
+          this.$auth.$storage.setLocalStorage('isLogin', true)
+          this.$auth.$storage.setLocalStorage('user', data.user, true)
+          this.$router.push({
+            path: '/',
+          })
+        })
+        .catch(function (error) {
+          throw error
+        })
+    },
+  },
 }
 </script>
 
