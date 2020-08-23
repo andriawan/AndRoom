@@ -60,18 +60,18 @@
             >
             <input
               class="p-2 w-full"
-              v-model="user.phone"
+              v-model="user.otp"
               id="otp"
               name="otp"
               type="number"
               maxlength="7"
-              @keypress.enter="doLogin"
+              @keypress.enter="confirmOTP"
               placeholder="please enter OTP"
             />
           </div>
         </div>
         <button
-          @click="doLogin()"
+          @click="doLogin"
           v-show="options.login.mode == options.login.DEFAULT || options.login.mode == options.login.PHONE"
           :disabled="button.login.disabled"
           class="block mt-8 border w-full border-white text-white p-2"
@@ -79,7 +79,7 @@
           {{ button.login.label }}
         </button>
         <button
-          @click="confirmOTP()"
+          @click="confirmOTP"
           v-show="options.login.mode == options.login.OTP"
           :disabled="button.otp.disabled"
           class="block mt-8 border w-full border-white text-white p-2"
@@ -114,7 +114,8 @@ export default {
           label: "Login",
           disabled: false,
           DEFAULT: "Login",
-          OTP: "Send OTP"
+          OTP: "Send OTP",
+          WAITING: "Please wait..."
         },
         otp: {
           label: "Confirm",
@@ -154,19 +155,32 @@ export default {
   watch: {
     "button.login.disabled": function (value) {
       if(value){
-        this.button.login.label = "Please wait...";
+        this.button.login.label = this.button.login.WAITING;
       }else{
-        this.button.login.label = "Login";
+        this.button.login.label = this.button.login.DEFAULT;
+      }
+    },
+    "button.otp.disabled": function (value) {
+      if(value){
+        this.button.otp.label = this.button.login.WAITING;
+      }else{
+        this.button.otp.label = this.button.otp.DEFAULT;
       }
     }
   },
   middleware: 'authenticated',
   methods: {
-    confirmOTP(){
-      // this.button.login.disabled = true;
+    async confirmOTP(){
+      this.button.otp.disabled = true;
       try {
-        this.user.login.data.confirm(this.user.otp);
+        let data = await this.user.login.data.confirm(this.user.otp);
+        this.$auth.$storage.setLocalStorage('isLogin', true)
+        this.$auth.$storage.setLocalStorage('user', data, true)
+        await this.$router.push({
+          path: '/',
+        })
       }catch (error) {
+        this.button.otp.disabled = false;
         this.$toast.error(error.message, this.options.toast);
       }
     },
@@ -198,7 +212,7 @@ export default {
     },
     async signInWithPhoneNumber(phone){
       try {
-        window.confirmationResult = await this.$fireAuth.signInWithPhoneNumber(
+        this.user.login.data = await this.$fireAuth.signInWithPhoneNumber(
           phone, new this.$fireAuthObj.RecaptchaVerifier('recaptcha-container', {
             'size': 'invisible',
             'callback': (response) => {
