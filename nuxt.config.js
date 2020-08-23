@@ -60,6 +60,7 @@ server: {
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
     '@nuxtjs/auth',
+    '@nuxtjs/toast',
     [
       '@nuxtjs/firebase',
       {
